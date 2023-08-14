@@ -21,11 +21,6 @@ def list_vpcs() -> list:
         raise e
     else:
         return vpc_ids
-    
-def display_menu(menu_items):
-    print("Select a VPC:")
-    for index, item in enumerate(menu_items, start=1):
-        print(f"{index}. {item}")
 
 #-------------------------------------------------------------------------------------------------------------------------#
 # This function takes VPC ID as input and check if VPC exists                                                             #
@@ -244,16 +239,19 @@ def print_output(vpc_id: str) -> str:
     print(table)
 
 if __name__ == '__main__':
-    if args.region:
-        region = args.region
-    else:
-        region = input("AWS Region: ")
+    if args.region: region = args.region
+    else: region = input("AWS Region: ")
     ec2 = boto3.client("ec2", region_name=region)
-    if args.vpc:
+    if args.vpc: 
         vpc_id = args.vpc
+        if not check_vpc_exists(vpc_id):
+            print("VPC does not exist")
+            sys.exit(0)
     else:
         vpc_list = list_vpcs()
-        display_menu(vpc_list)
+        print("Enter a VPC selection: ")
+        for index, item in enumerate(vpc_list, start=1):
+            print(f"{index}. {item}")
         try:
             vpc_selection = int(input("Enter VPC selection: "))
             if vpc_selection not in range(1, len(vpc_list) + 1):
@@ -264,8 +262,5 @@ if __name__ == '__main__':
             sys.exit(0)
 
         vpc_id = vpc_list[vpc_selection - 1]
-        
-    if not check_vpc_exists(vpc_id):
-        raise ValueError("VPC does not exist")
-    else:
-        print_output(vpc_id)
+
+    print_output(vpc_id)
